@@ -1,61 +1,71 @@
-# GitHub 自动部署说明
+# 国内部署说明
 
-## 当前推荐方案
-今晚不再使用 `CloudBase Framework CLI` 发布。
+## 当前推荐
 
-正式上线方式改为：
-1. 把当前仓库推到 GitHub
-2. 在腾讯系国内可访问平台连接 GitHub 仓库
-3. 平台自动构建并发布
-4. 运行时继续读取 CloudBase 数据
+正式环境使用：
 
-这样后续每次推送代码，都可以自动更新线上版本。
+- GitHub 自动部署到 EdgeOne Pages
+- CloudBase 作为数据层
+- `/` 公开只读访问
+- `/admin` 管理后台
 
-## 仓库要求
-当前仓库已经满足自动部署前提：
-- `npm run build` 可通过
-- `npm run start` 可作为生产启动命令
-- `next.config.ts` 已启用 `output: "standalone"`
-- 公开页和后台结构已固定
+## 长期稳定的关键
 
-## 推荐平台配置
-推荐把当前仓库连到支持 `Next.js` 全栈自动部署的平台。
+不要继续依赖临时 `CLOUDBASE_SESSION_TOKEN`。
 
-构建配置统一使用：
-- 安装命令：`npm install`
-- 构建命令：`npm run build`
-- 启动命令：`npm run start`
-- 服务端口：`3000`
-
-## 线上环境变量
-至少配置这些变量：
+正式环境建议固定使用下面这组变量：
 
 ```env
-CLOUDBASE_ENV_ID=test-1g02c1uk63f209a8
+CLOUDBASE_ENV_ID=你的环境 ID
+CLOUDBASE_REGION=ap-shanghai
+CLOUDBASE_CREDENTIAL_MODE=long-lived
+CLOUDBASE_SECRET_ID=你的长期 SecretId
+CLOUDBASE_SECRET_KEY=你的长期 SecretKey
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
-ADMIN_SESSION_SECRET=seat-admin-secret
+ADMIN_SESSION_SECRET=自定义随机长字符串
 ```
 
-如需启用 AI 识图，再补：
+说明：
+
+- `CLOUDBASE_CREDENTIAL_MODE=long-lived` 表示只走长期密钥
+- 正式环境不要再配置 `CLOUDBASE_SESSION_TOKEN`
+- `CLOUDBASE_REGION` 必须和 CloudBase 环境地域一致
+
+## 临时救火模式
+
+如果只是临时排障，可以短时间使用：
 
 ```env
-ARK_API_KEY=
-ARK_VISION_MODEL=
-ARK_BASE_URL=
+CLOUDBASE_CREDENTIAL_MODE=temporary
+CLOUDBASE_SECRET_ID=临时 SecretId
+CLOUDBASE_SECRET_KEY=临时 SecretKey
+CLOUDBASE_SESSION_TOKEN=临时 SessionToken
 ```
 
-## 上线后验证
-1. 打开正式网址 `/`
-2. 确认公开页可加载
-3. 打开 `/admin`
-4. 使用 `admin / admin123` 登录
-5. 新建并发布两个会议
-6. 返回 `/`，确认两个会议都能查看和切换
-7. 修改一个会议后刷新公开页，确认变更生效
+但这种方式会过期，不适合作为正式后台方案。
 
-## 当前说明
-- 代码已经切到 CloudBase 数据层
-- 管理后台继续是单管理员模式
-- 公开页继续是多已发布会议切换模式
-- 旧的 `CloudBase Framework CLI` 文件不再作为正式发布入口
+## EdgeOne Pages 构建配置
+
+- Framework: `Next.js`
+- Install Command: `npm install`
+- Build Command: `npm run build`
+- Start Command: `npm run start`
+- Node Version: `22`
+
+## 上线后检查
+
+1. 打开 `/admin`
+2. 使用 `admin / admin123` 登录
+3. 确认 `/api/admin/runtime` 里没有“临时凭证”警告
+4. 新建会议并保存
+5. 发布会议后回到 `/` 查看
+6. 刷新页面，确认数据仍在
+
+## 建议
+
+- 尽快把 `ADMIN_PASSWORD` 改掉，不要长期使用默认密码
+- `ADMIN_SESSION_SECRET` 使用随机长字符串
+- CloudBase 集合至少保留：
+  - `meetings`
+  - `public_state`

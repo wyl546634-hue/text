@@ -2,6 +2,7 @@ import tcb from "@cloudbase/node-sdk";
 
 import type { MeetingPublicState, MeetingRecord } from "@/features/seating/types";
 import {
+  getCloudBaseCredentialMode,
   getCloudBaseEnvId,
   getCloudBaseRegion,
   getCloudBaseSecretId,
@@ -32,10 +33,21 @@ export function createCloudBaseDb() {
     throw new Error("CloudBase 尚未配置，请先设置 CLOUDBASE_ENV_ID。");
   }
 
+  const credentialMode = getCloudBaseCredentialMode();
   const secretId = getCloudBaseSecretId();
   const secretKey = getCloudBaseSecretKey();
   const sessionToken = getCloudBaseSessionToken();
   const region = getCloudBaseRegion();
+  const useSessionToken = credentialMode === "temporary" || (credentialMode === "auto" && Boolean(sessionToken));
+
+  if (credentialMode === "temporary" && (!secretId || !secretKey || !sessionToken)) {
+    throw new Error("temporary 模式需要同时配置 CLOUDBASE_SECRET_ID、CLOUDBASE_SECRET_KEY 和 CLOUDBASE_SESSION_TOKEN。");
+  }
+
+  if ((credentialMode === "long-lived" || credentialMode === "auto") && (!secretId || !secretKey)) {
+    throw new Error("请配置长期可用的 CLOUDBASE_SECRET_ID 和 CLOUDBASE_SECRET_KEY。");
+  }
+
   const app = tcb.init({
     env,
     ...(region ? { region } : {}),
@@ -43,7 +55,7 @@ export function createCloudBaseDb() {
       ? {
           secretId,
           secretKey,
-          ...(sessionToken ? { sessionToken } : {}),
+          ...(useSessionToken && sessionToken ? { sessionToken } : {}),
         }
       : {}),
   });
