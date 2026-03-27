@@ -1,0 +1,2 @@
+﻿import * as XLSX from "xlsx";
+export function downloadPeopleImportTemplate() { const workbook = XLSX.utils.book_new(); const rows = [["优先级", "姓名", "职务", "区域", "条线", "归属", "状态"], [1, "张明", "主持人", "总部", "行政条线", "主席台", "正常"], [2, "李强", "参会领导", "总部", "生产条线", "主席台", "正常"], [3, "王芳", "参会人员", "企业", "财务条线", "台下", "正常"]]; const sheet = XLSX.utils.aoa_to_sheet(rows); XLSX.utils.book_append_sheet(workbook, sheet, "人员导入模板"); XLSX.writeFile(workbook, "人员导入模板.xlsx"); }
