@@ -1,7 +1,14 @@
 import tcb from "@cloudbase/node-sdk";
 
 import type { MeetingPublicState, MeetingRecord } from "@/features/seating/types";
-import { getCloudBaseEnvId, getCloudBaseSecretId, getCloudBaseSecretKey, getCloudBaseSessionToken, isCloudBaseConfigured } from "@/lib/cloudbase-config";
+import {
+  getCloudBaseEnvId,
+  getCloudBaseRegion,
+  getCloudBaseSecretId,
+  getCloudBaseSecretKey,
+  getCloudBaseSessionToken,
+  isCloudBaseConfigured,
+} from "@/lib/cloudbase-config";
 
 const MEETINGS_COLLECTION = "meetings";
 const PUBLIC_STATE_COLLECTION = "public_state";
@@ -28,8 +35,10 @@ export function createCloudBaseDb() {
   const secretId = getCloudBaseSecretId();
   const secretKey = getCloudBaseSecretKey();
   const sessionToken = getCloudBaseSessionToken();
+  const region = getCloudBaseRegion();
   const app = tcb.init({
     env,
+    ...(region ? { region } : {}),
     ...(secretId && secretKey
       ? {
           secretId,

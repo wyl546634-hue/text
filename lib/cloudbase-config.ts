@@ -14,6 +14,10 @@ export function getCloudBaseSessionToken() {
   return process.env.CLOUDBASE_SESSION_TOKEN ?? process.env.TENCENTCLOUD_SESSIONTOKEN ?? "";
 }
 
+export function getCloudBaseRegion() {
+  return process.env.CLOUDBASE_REGION ?? "";
+}
+
 export function isCloudBaseConfigured() {
   return Boolean(getCloudBaseEnvId());
 }
