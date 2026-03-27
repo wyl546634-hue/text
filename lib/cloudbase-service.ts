@@ -114,10 +114,7 @@ export async function saveMeetingRecords(records: MeetingRecord[]) {
   const nextIds = records.map((record) => record.id);
 
   for (const record of records) {
-    await collection.doc(record.id).set({
-      _id: record.id,
-      ...record,
-    });
+    await collection.doc(record.id).set(record);
   }
 
   const obsoleteIds = currentIds.filter((id) => id && !nextIds.includes(id));
@@ -152,7 +149,6 @@ export async function setMeetingPublicState(state: MeetingPublicState) {
   await ensureCloudBaseCollections();
   const db = createCloudBaseDb();
   await db.collection(PUBLIC_STATE_COLLECTION).doc(PUBLIC_STATE_DOC_ID).set({
-    _id: PUBLIC_STATE_DOC_ID,
     selectedMeetingId: state.selectedMeetingId,
     publishedMeetingIds: state.publishedMeetingIds,
     updatedAt: new Date().toISOString(),
